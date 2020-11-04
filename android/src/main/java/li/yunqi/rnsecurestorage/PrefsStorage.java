@@ -46,6 +46,14 @@ public class PrefsStorage {
                 .apply();
     }
 
+    public boolean storeEncryptedEntrySync(@NonNull EncryptionResult encryptionResult) {
+        String key = encryptionResult.key;
+        String cipherStorageName = encryptionResult.cipherStorage.getCipherStorageName();
+        return prefs.edit()
+                .putString(key, cipherStorageName + ":" + Base64.encodeToString(encryptionResult.value, Base64.DEFAULT))
+                .commit();
+    }
+
     public ResultSet getEncryptedEntry(@NonNull String key) {
         String value = prefs.getString(key, null);
         if (value == null) {
@@ -68,8 +76,7 @@ public class PrefsStorage {
 
     public String[] getAllKeys() {
         Map<String, ?> allEntries = prefs.getAll();
-        ArrayList<String> keyList = new ArrayList<>();
-        keyList.addAll(allEntries.keySet());
+        ArrayList<String> keyList = new ArrayList<>(allEntries.keySet());
         String[] keys = new String[keyList.size()];
         keyList.toArray(keys);
         return keys;
