@@ -85,8 +85,7 @@ afterEvaluate { project ->
     task androidJavadoc(type: Javadoc) {
         source = android.sourceSets.main.java.srcDirs
         classpath += files(android.bootClasspath)
-        // Use compileClasspath for Javadoc
-        classpath += files(project.configurations.getByName('compileClasspath').asList())
+        classpath += files(project.getConfigurations().getByName('compile').asList())
         include '**/*.java'
     }
 
@@ -108,20 +107,18 @@ afterEvaluate { project ->
         }
     }
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                from components.java
+    artifacts {
+        archives androidSourcesJar
+        archives androidJavadocJar
+    }
 
-                artifact androidSourcesJar
-                artifact androidJavadocJar
-            }
-        }
+    task installArchives(type: Upload) {
+        configuration = configurations.archives
+        repositories.mavenDeployer {
+            // Deploy to react-native-event-bridge/maven, ready to publish to npm
+            repository url: "file://${projectDir}/../android/maven"
 
-        repositories {
-            maven {
-                url = uri("file://${projectDir}/../android/maven")
-            }
+            configureReactNativePom pom
         }
     }
 }
